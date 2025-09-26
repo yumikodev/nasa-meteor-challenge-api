@@ -123,26 +123,19 @@ export interface OrbitClass {
 export interface Asteroid {
   id: string;
   name: string;
-  date: Date;
-  // Geometría para renderizado
-  geometry: {
-    radius: number;
-    minRadius: number;
-    maxRadius: number;
-  };
-  closeApproachDate: {
-    close_approach_date: string;
-    relative_velocity: {
-      kilometers_per_second: number;
-      kilometers_per_hour: number;
+  closeApproachData: {
+    closeApproachDate: string;
+    relativeVelocity: {
+      kilometersPerSecond: number;
+      kilometersPerHour: number;
     };
-    miss_distance: {
+    missDistance: {
       astronomical: number;
       lunar: number;
       kilometers: number;
       miles: number;
     };
-    orbiting_body: string;
+    orbitingBody: string;
   }[];
   // Metadatos para UI
   metadata: {

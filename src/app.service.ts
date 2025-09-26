@@ -19,44 +19,31 @@ export class AppService {
       objects.forEach((asteroid) => {
         const approach = asteroid.close_approach_data[0];
 
-        console.log(approach);
-
         asteroids.push({
           // Identificación
           id: asteroid.id,
           name: asteroid.name,
-          date: new Date(date),
 
-          // Geometría para renderizado
-          geometry: {
-            radius:
-              asteroid.estimated_diameter.kilometers.estimated_diameter_max,
-            minRadius:
-              asteroid.estimated_diameter.kilometers.estimated_diameter_min,
-            maxRadius:
-              asteroid.estimated_diameter.kilometers.estimated_diameter_max,
-          },
-
-          closeApproachDate: asteroid.close_approach_data.map(
+          closeApproachData: asteroid.close_approach_data.map(
             (approachData) => ({
-              close_approach_date: new Date(
+              closeApproachDate: new Date(
                 approachData.epoch_date_close_approach,
               ).toISOString(),
-              relative_velocity: {
-                kilometers_per_second: parseFloat(
+              relativeVelocity: {
+                kilometersPerSecond: parseFloat(
                   approach.relative_velocity.kilometers_per_second,
                 ),
-                kilometers_per_hour: parseFloat(
+                kilometersPerHour: parseFloat(
                   approach.relative_velocity.kilometers_per_hour,
                 ),
               },
-              miss_distance: {
+              missDistance: {
                 astronomical: parseFloat(approach.miss_distance.astronomical),
                 lunar: parseFloat(approach.miss_distance.lunar),
                 kilometers: parseFloat(approach.miss_distance.kilometers),
                 miles: parseFloat(approach.miss_distance.miles),
               },
-              orbiting_body: approach.orbiting_body,
+              orbitingBody: approach.orbiting_body,
             }),
           ),
 
