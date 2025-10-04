@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { isInt, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class FeedOptionsDto {
   @ApiPropertyOptional({
@@ -11,4 +11,10 @@ export class FeedOptionsDto {
   @Max(1)
   @IsOptional()
   onlyHazardous?: number;
+
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  @IsOptional()
+  limit?: number;
 }
