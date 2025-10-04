@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { FeedOptionsDto } from './neo/dtos/feed-options.dto';
 
@@ -16,12 +17,19 @@ export class AppController {
   }
 
   @Get('asteroids')
+  @ApiOperation({
+    summary:
+      'Obtener todos los asteroides más cercanos en un rango de una semana (usando la fecha de la petición como inicio).',
+  })
   feed(@Query() options: FeedOptionsDto) {
     return this.service.getFeed(options);
   }
 
   @Get('asteroids/:asteroidId')
-  info(@Param('asteroidId') asteroidId: string) {
+  @ApiOperation({
+    summary: 'Obten los datos específicos de un asteroide por su ID.',
+  })
+  details(@Param('asteroidId') asteroidId: string) {
     return this.service.getDetails(asteroidId);
   }
 }
