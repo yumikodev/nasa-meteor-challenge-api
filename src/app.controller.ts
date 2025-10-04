@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AppService } from './app.service';
+import { FeedOptionsDto } from './neo/dtos/feed-options.dto';
 
 @Controller()
 export class AppController {
@@ -14,8 +15,13 @@ export class AppController {
     };
   }
 
-  @Get('feed')
-  feed() {
-    return this.service.getFeed();
+  @Get('asteroids')
+  feed(@Query() options: FeedOptionsDto) {
+    return this.service.getFeed(options);
+  }
+
+  @Get('asteroids/:asteroidId')
+  info(@Param('asteroidId') asteroidId: string) {
+    return this.service.getDetails(asteroidId);
   }
 }

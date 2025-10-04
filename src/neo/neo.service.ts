@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { format } from 'date-fns';
-import { NeoFeed } from './interfaces/neo.interfaces';
+import { NeoDetails, NeoFeed } from './interfaces/neo.interfaces';
 
 @Injectable()
 export class NeoService {
@@ -12,9 +12,14 @@ export class NeoService {
   async feed(): Promise<NeoFeed> {
     const res = await fetch(this.getAPIUrl('feed'));
     const data = await res.json();
-
     if (!res.ok) throw new BadRequestException(data);
+    return data;
+  }
 
+  async details(id: string): Promise<NeoDetails> {
+    const res = await fetch(this.getAPIUrl(`neo/${id}`));
+    const data = await res.json();
+    if (!res.ok) throw new BadRequestException(data);
     return data;
   }
 

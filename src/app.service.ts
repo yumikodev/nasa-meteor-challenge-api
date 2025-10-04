@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { NeoService } from './neo/neo.service';
 import { Asteroid, NeoFeed } from './neo/interfaces/neo.interfaces';
+import { FeedOptionsDto } from './neo/dtos/feed-options.dto';
 
 @Injectable()
 export class AppService {
   constructor(private readonly neoService: NeoService) {}
 
-  async getFeed() {
+  async getFeed({ onlyHazardous }: FeedOptionsDto) {
     const feed = await this.neoService.feed();
-    const parsedData = this.transformForThreeJS(feed);
-    return parsedData;
-  }
-
-  transformForThreeJS(nasaData: NeoFeed) {
     const asteroids: Asteroid[] = [];
 
-    Object.entries(nasaData.near_earth_objects).forEach(([date, objects]) => {
-      objects.forEach((asteroid) => {
+    for (const [, objects] of Object.entries(feed.near_earth_objects)) {
+      for (const asteroid of objects.filter((o) =>
+        onlyHazardous ? o.is_potentially_hazardous_asteroid : true,
+      )) {
         const approach = asteroid.close_approach_data[0];
 
         asteroids.push({
@@ -31,19 +29,21 @@ export class AppService {
               ).toISOString(),
               relativeVelocity: {
                 kilometersPerSecond: parseFloat(
-                  approach.relative_velocity.kilometers_per_second,
+                  approachData.relative_velocity.kilometers_per_second,
                 ),
                 kilometersPerHour: parseFloat(
-                  approach.relative_velocity.kilometers_per_hour,
+                  approachData.relative_velocity.kilometers_per_hour,
                 ),
               },
               missDistance: {
-                astronomical: parseFloat(approach.miss_distance.astronomical),
-                lunar: parseFloat(approach.miss_distance.lunar),
-                kilometers: parseFloat(approach.miss_distance.kilometers),
-                miles: parseFloat(approach.miss_distance.miles),
+                astronomical: parseFloat(
+                  approachData.miss_distance.astronomical,
+                ),
+                lunar: parseFloat(approachData.miss_distance.lunar),
+                kilometers: parseFloat(approachData.miss_distance.kilometers),
+                miles: parseFloat(approachData.miss_distance.miles),
               },
-              orbitingBody: approach.orbiting_body,
+              orbitingBody: approachData.orbiting_body,
             }),
           ),
 
@@ -65,8 +65,8 @@ export class AppService {
             },
           },
         });
-      });
-    });
+      }
+    }
 
     return {
       asteroids,
@@ -76,6 +76,86 @@ export class AppService {
           (a) => a.metadata.isPotentiallyHazardous,
         ).length,
         sentryCount: asteroids.filter((a) => a.metadata.isSentryObject).length,
+      },
+    };
+  }
+
+  async getDetails(asteroidId: string) {
+    const {
+      id,
+      name,
+      designation,
+      nasa_jpl_url,
+      absolute_magnitude_h,
+      estimated_diameter,
+      is_potentially_hazardous_asteroid,
+      close_approach_data,
+      is_sentry_object,
+      orbital_data,
+    } = await this.neoService.details(asteroidId);
+
+    return {
+      id,
+      name,
+      designation,
+      closeApproachData: close_approach_data.map((approachData) => ({
+        closeApproachDate: new Date(
+          approachData.epoch_date_close_approach,
+        ).toISOString(),
+        relativeVelocity: {
+          kilometersPerSecond: parseFloat(
+            approachData.relative_velocity.kilometers_per_second,
+          ),
+          kilometersPerHour: parseFloat(
+            approachData.relative_velocity.kilometers_per_hour,
+          ),
+        },
+        missDistance: {
+          astronomical: parseFloat(approachData.miss_distance.astronomical),
+          lunar: parseFloat(approachData.miss_distance.lunar),
+          kilometers: parseFloat(approachData.miss_distance.kilometers),
+          miles: parseFloat(approachData.miss_distance.miles),
+        },
+        orbitingBody: approachData.orbiting_body,
+      })),
+      orbitalData: {
+        orbitId: orbital_data.orbit_id,
+        orbitDeterminationDate: orbital_data.orbit_determination_date,
+        first_observation_date: orbital_data.first_observation_date,
+        last_observation_date: orbital_data.last_observation_date,
+        dataArcInDays: orbital_data.data_arc_in_days,
+        observationsUsed: orbital_data.observations_used,
+        orbitUncertainty: orbital_data.orbit_uncertainty,
+        minimumOrbitIntersection: orbital_data.minimum_orbit_intersection,
+        jupiterTisserandInvariant: orbital_data.jupiter_tisserand_invariant,
+        epochOsculation: orbital_data.epoch_osculation,
+        eccentricity: orbital_data.eccentricity,
+        semiMajorAxis: orbital_data.semi_major_axis,
+        inclination: orbital_data.inclination,
+        ascendingNodeLongitude: orbital_data.ascending_node_longitude,
+        orbitalPeriod: orbital_data.orbital_period,
+        perihelionDistance: orbital_data.perihelion_distance,
+        perihelionArgument: orbital_data.perihelion_argument,
+        perihelionTime: orbital_data.perihelion_time,
+        aphelionDistance: orbital_data.aphelion_distance,
+        meanAnomaly: orbital_data.mean_anomaly,
+        meanMotion: orbital_data.mean_motion,
+        equinox: orbital_data.equinox,
+        orbitClass: {
+          type: orbital_data.orbit_class.orbit_class_type,
+          description: orbital_data.orbit_class.orbit_class_description,
+          range: orbital_data.orbit_class.orbit_class_range,
+        },
+      },
+      metadata: {
+        nasaJplUrl: nasa_jpl_url,
+        isPotentiallyHazardous: is_potentially_hazardous_asteroid,
+        isSentryObject: is_sentry_object,
+        absoluteMagnitude: absolute_magnitude_h,
+        estimatedDiameter: {
+          min: estimated_diameter.kilometers.estimated_diameter_min,
+          max: estimated_diameter.kilometers.estimated_diameter_max,
+        },
       },
     };
   }
