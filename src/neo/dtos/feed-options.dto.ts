@@ -12,6 +12,10 @@ export class FeedOptionsDto {
   @IsOptional()
   onlyHazardous?: number;
 
+  @ApiPropertyOptional({
+    description:
+      'Limita la cantidad de asteroides a devolver (no aplica cuando onlyHazardous es 1).',
+  })
   @IsInt()
   @Min(1)
   @Max(50)

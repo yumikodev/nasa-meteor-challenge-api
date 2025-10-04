@@ -7,7 +7,7 @@ import { FeedOptionsDto } from './neo/dtos/feed-options.dto';
 export class AppService {
   constructor(private readonly neoService: NeoService) {}
 
-  async getFeed({ onlyHazardous }: FeedOptionsDto) {
+  async getFeed({ onlyHazardous, limit }: FeedOptionsDto) {
     const feed = await this.neoService.feed();
     const asteroids: Asteroid[] = [];
 
@@ -67,6 +67,14 @@ export class AppService {
         });
       }
     }
+
+    asteroids.sort(
+      (a, b) =>
+        Number(b.metadata.isPotentiallyHazardous) -
+        Number(a.metadata.isPotentiallyHazardous),
+    );
+    if (!onlyHazardous && limit && asteroids.length > limit)
+      asteroids.length = limit;
 
     return {
       asteroids,
