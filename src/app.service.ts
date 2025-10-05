@@ -13,7 +13,9 @@ export class AppService {
 
     for (const [, objects] of Object.entries(feed.near_earth_objects)) {
       for (const asteroid of objects.filter((o) =>
-        onlyHazardous ? o.is_potentially_hazardous_asteroid : true,
+        onlyHazardous
+          ? o.is_potentially_hazardous_asteroid || o.is_sentry_object
+          : true,
       )) {
         const approach = asteroid.close_approach_data[0];
 
@@ -129,8 +131,8 @@ export class AppService {
       orbitalData: {
         orbitId: orbital_data.orbit_id,
         orbitDeterminationDate: new Date(orbital_data.orbit_determination_date),
-        first_observation_date: new Date(orbital_data.first_observation_date),
-        last_observation_date: new Date(orbital_data.last_observation_date),
+        firstObservationDate: new Date(orbital_data.first_observation_date),
+        lastObservationDate: new Date(orbital_data.last_observation_date),
         dataArcInDays: orbital_data.data_arc_in_days,
         observationsUsed: orbital_data.observations_used,
         orbitUncertainty: orbital_data.orbit_uncertainty,
